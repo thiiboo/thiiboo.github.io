@@ -1,5 +1,5 @@
 // Garde l'app disponible sans Internet. Change VERSION à chaque mise à jour.
-var VERSION = "super-agenda-v6";
+var VERSION = "super-agenda-v7";
 var CORE = ["./", "index.html", "manifest.webmanifest", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", function (e) {
@@ -13,6 +13,8 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
   var url = new URL(e.request.url);
+  // Seulement l'app et ses polices : l'agenda commun (api.github.com) doit toujours passer par Internet.
+  if (url.origin !== location.origin && !/fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) return;
   if (url.origin === location.origin && e.request.mode === "navigate") {
     // Page: réseau d'abord pour recevoir les mises à jour, sinon la copie gardée.
     e.respondWith(fetch(e.request).then(function (r) {

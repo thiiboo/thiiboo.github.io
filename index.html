@@ -37,6 +37,7 @@
   --c-loisir: #1c9a5c;
   --c-sport: #0f8fb0;
   --c-autre: #8a8f86;
+  --c-commun: #c0407e;
   --p-urgent: #d7263d; --p-urgent-bg: #fde8ea;
   --p-haute: #e8730c; --p-haute-bg: #fdefe2;
   --p-normale: #2f6fd6; --p-normale-bg: #e7effc;
@@ -256,7 +257,7 @@ button { cursor: pointer; }
   --accent: #d6577f; --accent-soft: #fbe9ef; --accent-ink: #ffffff; --danger: #c8384f; --today: #d6577f;
   --shadow: rgba(120, 60, 80, .07);
   --c-ecole: #5b7fd1; --c-devoir: #e0954a; --c-examen: #d6455d; --c-etude: #9a76d4;
-  --c-travail: #5f8f8b; --c-famille: #e07aa0; --c-loisir: #5aab7b; --c-sport: #4ea5c4; --c-autre: #a3969b;
+  --c-travail: #5f8f8b; --c-famille: #c39a32; --c-loisir: #5aab7b; --c-sport: #4ea5c4; --c-autre: #a3969b; --c-commun: #c0407e;
   --p-urgent: #d6455d; --p-urgent-bg: #fdecef; --p-haute: #e0954a; --p-haute-bg: #fdf3ea;
   --p-normale: #5b7fd1; --p-normale-bg: #eef2fb; --p-basse: #5aab7b; --p-basse-bg: #edf7f1;
   --bar: rgba(255,255,255,.94);
@@ -270,7 +271,7 @@ button { cursor: pointer; }
     --accent: #ec7fa2; --accent-soft: #3a2230; --accent-ink: #1d1418; --danger: #f06a7f; --today: #ec7fa2;
     --shadow: rgba(0,0,0,.3);
     --c-ecole: #86a3e6; --c-devoir: #edae6c; --c-examen: #f06a7f; --c-etude: #b498e6;
-    --c-travail: #83b3ae; --c-famille: #ef9bbb; --c-loisir: #7cc79a; --c-sport: #76c0da; --c-autre: #b5a9ae;
+    --c-travail: #83b3ae; --c-famille: #e0c062; --c-loisir: #7cc79a; --c-sport: #76c0da; --c-autre: #b5a9ae; --c-commun: #f283b5;
     --p-urgent: #f06a7f; --p-urgent-bg: #3a1d24; --p-haute: #edae6c; --p-haute-bg: #382a1d;
     --p-normale: #86a3e6; --p-normale-bg: #1f2638; --p-basse: #7cc79a; --p-basse-bg: #1b2e23;
     --bar: rgba(34,27,31,.94);
@@ -282,7 +283,7 @@ button { cursor: pointer; }
   --accent: #ec7fa2; --accent-soft: #3a2230; --accent-ink: #1d1418; --danger: #f06a7f; --today: #ec7fa2;
   --shadow: rgba(0,0,0,.3);
   --c-ecole: #86a3e6; --c-devoir: #edae6c; --c-examen: #f06a7f; --c-etude: #b498e6;
-  --c-travail: #83b3ae; --c-famille: #ef9bbb; --c-loisir: #7cc79a; --c-sport: #76c0da; --c-autre: #b5a9ae;
+  --c-travail: #83b3ae; --c-famille: #e0c062; --c-loisir: #7cc79a; --c-sport: #76c0da; --c-autre: #b5a9ae; --c-commun: #f283b5;
   --p-urgent: #f06a7f; --p-urgent-bg: #3a1d24; --p-haute: #edae6c; --p-haute-bg: #382a1d;
   --p-normale: #86a3e6; --p-normale-bg: #1f2638; --p-basse: #7cc79a; --p-basse-bg: #1b2e23;
   --bar: rgba(34,27,31,.94);
@@ -408,6 +409,19 @@ body { font-size: 16px; font-weight: 500; }
 .mev.done { text-decoration: line-through; opacity: .6; }
 .mmore { font-size: 10px; font-weight: 700; color: var(--muted); padding-left: 3px; }
 .tabbar span { white-space: nowrap; }
+
+/* Agenda commun */
+.shared-badge { font-weight: 600; font-size: 12px; color: var(--muted); margin-left: 4px; }
+.shared-body { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
+.shared-body p { margin: 0; }
+.shared-body textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px; font: 500 14px/1.4 ui-monospace, Menlo, monospace; background: var(--bg); color: var(--ink); word-break: break-all; }
+.shared-status { color: var(--ink); }
+.shared-status.bad { color: var(--danger); font-weight: 600; }
+.shared-step { font-weight: 700; color: var(--ink); }
+.shared-note { font-size: 13px; color: var(--muted); margin: 0; }
+.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--ink); }
+.steps a, .shared-body a { color: var(--accent); font-weight: 700; }
+.linkish { border: 0; background: transparent; color: var(--muted); text-decoration: underline; font-size: 13px; padding: 4px 0; align-self: flex-start; text-align: left; }
 </style>
 
 </head>
@@ -450,6 +464,10 @@ body { font-size: 16px; font-weight: 500; }
 
   <main id="main"></main>
 
+  <details class="help" id="sharedSection">
+    <summary>Agenda commun ♥ <span class="shared-badge" id="sharedState"></span></summary>
+    <div class="shared-body" id="sharedBody"></div>
+  </details>
   <details class="help">
     <summary>Mettre l'agenda sur l'écran d'accueil de l'iPhone</summary>
     <ol>
@@ -481,6 +499,7 @@ body { font-size: 16px; font-weight: 500; }
   "use strict";
 
   var CATS = [
+    { id: "commun", label: "Commun ♥" },
     { id: "ecole", label: "École" },
     { id: "devoir", label: "Devoir", task: true },
     { id: "examen", label: "Examen", task: true },
@@ -621,7 +640,7 @@ body { font-size: 16px; font-weight: 500; }
     saveLocal();
   }
   try { snapshotIfNeeded(localStorage.getItem("sa-events")); } catch (e) {}
-  setStatus("Tes données restent sur ce téléphone. Fais une sauvegarde de temps en temps.");
+  setStatus("Tes données restent sur ce téléphone (sauf la catégorie Commun, partagée et chiffrée). Fais une sauvegarde de temps en temps.");
 
 
   /* ---------- render ---------- */
@@ -1055,11 +1074,14 @@ body { font-size: 16px; font-weight: 500; }
   }
   function upsert(ev) {
     var i = state.events.findIndex(function (x) { return x.id === ev.id; });
+    sharedLocalChange(i >= 0 ? state.events[i] : null, ev);
     if (i >= 0) state.events[i] = ev; else state.events.push(ev);
     render();
     return store.save(ev).catch(function () { toast("Pas enregistré, réessaie"); });
   }
   function removeEv(id) {
+    var old = state.events.filter(function (x) { return x.id === id; })[0];
+    if (old) sharedLocalChange(old, null);
     state.events = state.events.filter(function (x) { return x.id !== id; });
     render();
     return store.remove(id).catch(function () { toast("Pas supprimé, réessaie"); });
@@ -1096,10 +1118,13 @@ body { font-size: 16px; font-weight: 500; }
       var b = el("button", "cat"); b.type = "button"; b.style.setProperty("--c", catColor(c.id));
       b.appendChild(el("i")); b.appendChild(document.createTextNode(c.label));
       b.setAttribute("aria-pressed", String(data.cat === c.id));
-      b.onclick = function () { data.cat = c.id; Array.prototype.forEach.call(cats.children, function (n) { n.setAttribute("aria-pressed", "false"); }); b.setAttribute("aria-pressed", "true"); };
+      b.onclick = function () { data.cat = c.id; Array.prototype.forEach.call(cats.children, function (n) { n.setAttribute("aria-pressed", "false"); }); b.setAttribute("aria-pressed", "true"); syncHint(); };
       cats.appendChild(b);
     });
-    catWrap.appendChild(cats); sh.appendChild(catWrap);
+    catWrap.appendChild(cats);
+    var hint = el("p", "shared-note", "Pas encore partagé : relie l'autre téléphone dans « Agenda commun », en bas de l'app. L'activité sera envoyée dès que ce sera fait.");
+    function syncHint() { hint.hidden = !(data.cat === SHARED_CAT && !shared.cfg); }
+    syncHint(); catWrap.appendChild(hint); sh.appendChild(catWrap);
 
     var fDate = field("Jour", "input", "f-date"); fDate.input.type = "date"; fDate.input.value = data.date;
     var fStart = field("Début (facultatif)", "input", "f-start"); fStart.input.type = "time"; fStart.input.value = data.start || "";
@@ -1243,6 +1268,309 @@ body { font-size: 16px; font-weight: 500; }
     };
     r.readAsText(f);
   };
+
+  /* ---------- agenda commun : la catégorie « Commun » est partagée entre deux téléphones ----------
+     Le reste de l'agenda ne quitte jamais le téléphone. Les activités communes sont chiffrées
+     (AES-GCM) avant d'être envoyées dans un fichier d'un dépôt GitHub privé ; la clé n'existe
+     que sur les deux téléphones (dans le code d'invitation). */
+  var TOKEN_URL = "https://github.com/settings/personal-access-tokens/new?name=Agenda+commun&description=Synchro+de+la+categorie+Commun&expires_in=none&contents=write";
+  var TOKEN_STEPS = ". Tout est déjà rempli sauf une chose : sous « Repository access », choisis « Only select repositories », puis agenda-commun. Touche ensuite « Generate token ».";
+  var SHARED_CAT = "commun", SHARED_REPO = "agenda-commun", SHARED_FILE = "commun.json";
+  var shared = { cfg: null, busy: false, again: false, timer: null, last: null, error: null, pairing: false };
+  function sharedLoad() { try { shared.cfg = JSON.parse(lsGet("sa-shared") || "null"); } catch (e) { shared.cfg = null; } }
+  function sharedSave() { if (shared.cfg) lsSet("sa-shared", JSON.stringify(shared.cfg)); else { try { localStorage.removeItem("sa-shared"); } catch (e) {} } }
+  function sharedDead() { try { return JSON.parse(lsGet("sa-shared-dead") || "{}"); } catch (e) { return {}; } }
+  function sharedSetDead(d) { lsSet("sa-shared-dead", JSON.stringify(d)); }
+  function sharedTomb(id) { var d = sharedDead(); d[id] = Date.now(); sharedSetDead(d); }
+  function localShared() { return state.events.filter(function (e) { return e.cat === SHARED_CAT; }); }
+
+  // Called by upsert/removeEv for every local change.
+  function sharedLocalChange(before, after) {
+    var was = before && before.cat === SHARED_CAT, is = after && after.cat === SHARED_CAT;
+    if (is) after.u = Date.now();
+    if (was && !is) sharedTomb(before.id);
+    if (was || is) sharedSoon();
+  }
+  function sharedSoon() {
+    clearTimeout(shared.timer);
+    if (shared.cfg) shared.timer = setTimeout(sharedSync, 700);
+  }
+
+  /* bytes <-> base64 */
+  function b64(bytes) {
+    bytes = new Uint8Array(bytes); var s = "";
+    for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+  function unb64(str) { var s = atob(String(str).replace(/\s/g, "")), b = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+  function b64url(bytes) { return b64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function unb64url(s) { s = String(s).replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return unb64(s); }
+  function utf8(s) { return new TextEncoder().encode(s); }
+  function fromUtf8(b) { return new TextDecoder().decode(b); }
+  // Same JSON for the same data, whatever the key order (to tell if anything changed).
+  function stable(v) {
+    if (v === null || typeof v !== "object") return JSON.stringify(v);
+    if (Array.isArray(v)) return "[" + v.map(stable).join(",") + "]";
+    return "{" + Object.keys(v).sort().filter(function (k) { return v[k] !== undefined; }).map(function (k) { return JSON.stringify(k) + ":" + stable(v[k]); }).join(",") + "}";
+  }
+
+  /* chiffrement */
+  function sharedKey(k) { return crypto.subtle.importKey("raw", unb64url(k || shared.cfg.k), "AES-GCM", false, ["encrypt", "decrypt"]); }
+  async function seal(obj) {
+    var key = await sharedKey(), iv = crypto.getRandomValues(new Uint8Array(12));
+    var ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, utf8(JSON.stringify(obj)));
+    return { v: 1, iv: b64(iv), ct: b64(ct) };
+  }
+  async function unseal(box) {
+    var key = await sharedKey();
+    try { return JSON.parse(fromUtf8(await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(box.iv) }, key, unb64(box.ct)))); }
+    catch (e) { var err = new Error("key"); err.kind = "key"; throw err; }
+  }
+
+  /* GitHub : un seul fichier chiffré dans le dépôt privé « agenda-commun » */
+  function ghFetch(path, method, body, token) {
+    var h = { "Accept": "application/vnd.github+json", "Authorization": "Bearer " + (token || shared.cfg.t) };
+    if (body) h["Content-Type"] = "application/json";
+    return fetch("https://api.github.com" + path, { method: method || "GET", headers: h, cache: "no-store", body: body ? JSON.stringify(body) : undefined });
+  }
+  function httpErr(res) { var e = new Error("http " + res.status); e.status = res.status; return e; }
+  function filePath() { var c = shared.cfg; return "/repos/" + c.o + "/" + c.r + "/contents/" + SHARED_FILE; }
+  async function remoteGet() {
+    var r = await ghFetch(filePath());
+    if (r.status === 404) return { doc: null, sha: null };
+    if (!r.ok) throw httpErr(r);
+    var j = await r.json();
+    return { doc: await unseal(JSON.parse(fromUtf8(unb64(j.content)))), sha: j.sha };
+  }
+  async function remotePut(doc, sha) {
+    var body = { message: "Agenda commun", content: b64(utf8(JSON.stringify(await seal(doc)))) };
+    if (sha) body.sha = sha;
+    var r = await ghFetch(filePath(), "PUT", body);
+    if (r.status === 409 || r.status === 422) { var e = new Error("conflict"); e.conflict = true; e.status = r.status; throw e; }
+    if (!r.ok) throw httpErr(r);
+  }
+
+  /* fusion : pour chaque activité, la version modifiée le plus récemment gagne ; une suppression
+     plus récente que la dernière modification gagne aussi */
+  function sharedMerge(localItems, localDead, remote) {
+    var items = {}, dead = {}, rItems = (remote && remote.items) || {}, rDead = (remote && remote.dead) || {};
+    [localDead, rDead].forEach(function (d) { Object.keys(d).forEach(function (id) { dead[id] = Math.max(dead[id] || 0, d[id]); }); });
+    function take(it) { var cur = items[it.id]; if (!cur || (it.u || 0) > (cur.u || 0)) items[it.id] = it; }
+    Object.keys(rItems).forEach(function (id) { var it = Object.assign({}, rItems[id]); it.id = id; take(it); });
+    localItems.forEach(function (it) { take(Object.assign({}, it)); });
+    Object.keys(items).forEach(function (id) { if (dead[id] && dead[id] >= (items[id].u || 0)) delete items[id]; });
+    var cutoff = Date.now() - 120 * 86400000;
+    Object.keys(dead).forEach(function (id) { if (dead[id] < cutoff) delete dead[id]; });
+    return { items: items, dead: dead };
+  }
+  // Applies a merged copy to this phone, re-merging with whatever changed locally meanwhile.
+  function sharedApply(doc) {
+    var before = stable(localShared());
+    var m = sharedMerge(localShared(), sharedDead(), doc);
+    var mine = state.events.filter(function (e) { return e.cat !== SHARED_CAT && !m.items[e.id]; });
+    state.events = mine.concat(Object.keys(m.items).map(function (id) { return m.items[id]; }));
+    sharedSetDead(m.dead);
+    if (stable(localShared()) !== before) { saveLocal(); render(); }
+    return stable(m) !== stable({ items: doc.items, dead: doc.dead });
+  }
+
+  async function sharedSync() {
+    if (!shared.cfg) return;
+    if (shared.busy) { shared.again = true; return; }
+    shared.busy = true; shared.again = false; renderShared();
+    try {
+      for (var attempt = 0; ; attempt++) {
+        var rem = await remoteGet();
+        var remote = rem.doc ? { items: rem.doc.items || {}, dead: rem.doc.dead || {} } : null;
+        var merged = sharedMerge(localShared(), sharedDead(), remote);
+        if (!remote || stable(merged) !== stable(remote)) {
+          try { await remotePut({ v: 1, items: merged.items, dead: merged.dead }, rem.sha); }
+          catch (e) { if (e.conflict && attempt < 4) continue; throw e; }
+        }
+        if (sharedApply(merged)) shared.again = true;
+        break;
+      }
+      shared.last = new Date(); shared.error = null;
+    } catch (e) {
+      shared.error = e;
+    } finally {
+      shared.busy = false; renderShared();
+      if (shared.again) setTimeout(sharedSync, 400);
+    }
+  }
+  function sharedErrorText(e) {
+    if (!e) return "";
+    if (e.kind === "key") return "Le code de cet agenda commun ne correspond pas à celui de l'autre téléphone. Utilise le code d'invitation de l'autre téléphone.";
+    if (e.status === 401) return "GitHub n'accepte plus le code d'accès (il a peut-être expiré). Crée un nouveau code et reconnecte l'agenda commun.";
+    if (e.status === 403) return "GitHub refuse l'accès. Vérifie que le code d'accès a la permission « Contents : Read and write » sur le dépôt agenda-commun.";
+    if (e.status === 404) return "Le dépôt « agenda-commun » est introuvable, ou le code d'accès n'y a pas droit.";
+    if (e.status) return "GitHub a répondu une erreur (" + e.status + "). La synchro réessaiera toute seule.";
+    return "Pas de connexion Internet. La synchro reprendra toute seule.";
+  }
+
+  /* jumelage */
+  function inviteCode() { var c = shared.cfg; return "SA1:" + b64url(utf8(JSON.stringify({ o: c.o, r: c.r, t: c.t, k: c.k }))); }
+  function parseInvite(text) {
+    var m = String(text || "").match(/SA1:([A-Za-z0-9_-]+)/);
+    if (!m) return null;
+    try { var c = JSON.parse(fromUtf8(unb64url(m[1]))); return c && c.o && c.r && c.t && c.k ? c : null; } catch (e) { return null; }
+  }
+  async function sharedCreate(token, overwrite) {
+    token = String(token || "").trim();
+    if (!token) throw new Error("Colle d'abord le code d'accès GitHub.");
+    var u;
+    try { u = await ghFetch("/user", "GET", null, token); } catch (e) { throw new Error("Pas de connexion Internet. Réessaie quand tu es connecté."); }
+    if (u.status === 401) throw new Error("GitHub n'accepte pas ce code. Vérifie que tu l'as copié en entier.");
+    if (!u.ok) throw new Error("GitHub a répondu une erreur (" + u.status + "). Réessaie dans un instant.");
+    var login = (await u.json()).login;
+    var repo = await ghFetch("/repos/" + login + "/" + SHARED_REPO, "GET", null, token);
+    if (repo.status === 404) throw new Error("Je ne trouve pas le dépôt « " + SHARED_REPO + " » sur ton compte " + login + ", ou le code d'accès n'y a pas droit.");
+    if (!repo.ok) throw new Error("GitHub a répondu une erreur (" + repo.status + ").");
+    var prev = shared.cfg;
+    shared.cfg = { o: login, r: SHARED_REPO, t: token, k: b64url(crypto.getRandomValues(new Uint8Array(32))) };
+    shared.pairing = true;
+    try {
+      var rem = await ghFetch(filePath());
+      if (rem.ok && !overwrite) { var ex = new Error("exists"); ex.exists = true; throw ex; }
+      if (rem.ok && overwrite) { var j = await rem.json(); await remotePut({ v: 1, items: {}, dead: {} }, j.sha); }
+      sharedSave(); await sharedSync();
+      if (shared.error) throw new Error(sharedErrorText(shared.error));
+    } catch (e) {
+      shared.cfg = prev; shared.error = null; sharedSave();
+      if (e.exists) throw e;
+      if (e.status || e.conflict || e instanceof TypeError) throw new Error(sharedErrorText(e));
+      throw e;
+    } finally { shared.pairing = false; }
+  }
+  async function sharedJoin(text) {
+    var c = parseInvite(text);
+    if (!c) throw new Error("Ce code d'invitation n'est pas complet. Copie-le de nouveau en entier.");
+    var prev = shared.cfg; shared.cfg = c; sharedSave(); shared.pairing = true;
+    try {
+      await sharedSync();
+      if (shared.error) { var err = shared.error; shared.cfg = prev; shared.error = null; sharedSave(); throw new Error(sharedErrorText(err)); }
+    } finally { shared.pairing = false; }
+  }
+  function sharedLeave() {
+    shared.cfg = null; shared.error = null; shared.last = null; sharedSave();
+    lsSet("sa-shared-dead", "{}");
+    state.events = state.events.filter(function (e) { return e.cat !== SHARED_CAT; });
+    saveLocal(); render(); renderShared();
+  }
+
+  /* écran « Agenda commun » */
+  function renderShared() {
+    var box = document.getElementById("sharedBody"); if (!box || shared.pairing) return;
+    var badge = document.getElementById("sharedState");
+    box.textContent = "";
+    if (!shared.cfg) {
+      badge.textContent = "pas encore relié";
+      box.appendChild(el("p", null, "Les activités de la catégorie « Commun » (soupers, sorties…) apparaissent sur ton téléphone et sur celui de ton chum ou de ta blonde. Tout le reste de ton agenda reste privé sur ton téléphone."));
+      var acts = el("div", "actions");
+      var mk = el("button", "btn", "Créer l'agenda commun"); mk.type = "button";
+      var jn = el("button", "btn ghost", "J'ai reçu un code"); jn.type = "button";
+      acts.appendChild(mk); acts.appendChild(jn); box.appendChild(acts);
+      mk.onclick = function () { sharedCreateForm(box); };
+      jn.onclick = function () { sharedJoinForm(box); };
+      return;
+    }
+    badge.textContent = shared.busy ? "synchro…" : shared.error ? "à vérifier" : "relié";
+    var st = el("p", "shared-status" + (shared.error ? " bad" : ""));
+    st.textContent = shared.error ? sharedErrorText(shared.error)
+      : shared.last ? "Synchronisé à " + pad(shared.last.getHours()) + ":" + pad(shared.last.getMinutes()) + ". Les changements arrivent sur l'autre téléphone quand il ouvre l'app."
+      : "Synchronisation…";
+    box.appendChild(st);
+    var acts2 = el("div", "actions");
+    var now = el("button", "btn", "Synchroniser maintenant"); now.type = "button"; now.onclick = function () { sharedSync(); };
+    var inv = el("button", "btn ghost", "Inviter l'autre téléphone"); inv.type = "button"; inv.onclick = function () { sharedInvite(box); };
+    acts2.appendChild(now); acts2.appendChild(inv); box.appendChild(acts2);
+    var lv = el("button", "linkish", "Quitter l'agenda commun sur ce téléphone"); lv.type = "button"; var armed = false;
+    lv.onclick = function () {
+      if (!armed) { armed = true; lv.textContent = "Touche encore : les activités communes seront retirées de ce téléphone"; return; }
+      sharedLeave(); toast("Agenda commun quitté");
+    };
+    box.appendChild(lv);
+  }
+  function formShell(box, title) {
+    box.textContent = "";
+    box.appendChild(el("p", "shared-step", title));
+    var back = el("button", "linkish", "Annuler"); back.type = "button"; back.onclick = renderShared;
+    return back;
+  }
+  function sharedCreateForm(box) {
+    var back = formShell(box, "Créer l'agenda commun (à faire sur un seul des deux téléphones)");
+    var ol = el("ol", "steps");
+    var li1 = el("li"); li1.appendChild(document.createTextNode("Crée un dépôt privé nommé agenda-commun : "));
+    var a1 = el("a", null, "ouvrir GitHub"); a1.href = "https://github.com/new?name=agenda-commun&visibility=private&description=Agenda+commun"; a1.target = "_blank"; a1.rel = "noopener";
+    li1.appendChild(a1); li1.appendChild(document.createTextNode(". Vérifie que « Private » est choisi, active « Add README », puis touche « Create repository »."));
+    var li2 = el("li"); li2.appendChild(document.createTextNode("Crée un code d'accès : "));
+    var a2 = el("a", null, "ouvrir la page du code"); a2.href = TOKEN_URL; a2.target = "_blank"; a2.rel = "noopener";
+    li2.appendChild(a2); li2.appendChild(document.createTextNode(TOKEN_STEPS));
+    var li3 = el("li", null, "Copie le code (il commence par github_pat_) et colle-le ici :");
+    ol.appendChild(li1); ol.appendChild(li2); ol.appendChild(li3); box.appendChild(ol);
+    var ta = el("textarea"); ta.id = "sharedToken"; ta.rows = 3; ta.placeholder = "github_pat_…"; ta.setAttribute("autocomplete", "off"); ta.setAttribute("autocapitalize", "off"); ta.spellcheck = false;
+    box.appendChild(ta);
+    var err = el("p", "err"); err.hidden = true; box.appendChild(err);
+    var acts = el("div", "actions");
+    var go = el("button", "btn", "Relier"); go.type = "button";
+    acts.appendChild(go); box.appendChild(acts); box.appendChild(back);
+    var overwrite = false;
+    go.onclick = async function () {
+      go.disabled = true; go.textContent = "Vérification…"; err.hidden = true;
+      try { await sharedCreate(ta.value, overwrite); toast("Agenda commun créé"); renderShared(); sharedInvite(box); }
+      catch (e) {
+        err.hidden = false;
+        if (e.exists) {
+          err.textContent = "Un agenda commun existe déjà dans ce dépôt. Sur ce téléphone, utilise plutôt « J'ai reçu un code » avec le code de l'autre téléphone. Si plus aucun téléphone n'est relié, touche « Recommencer à zéro » (les activités communes déjà envoyées seront effacées).";
+          go.textContent = "Recommencer à zéro"; go.disabled = false; overwrite = true; return;
+        }
+        err.textContent = e.message;
+      }
+      go.disabled = false; if (!overwrite) go.textContent = "Relier";
+    };
+  }
+  function sharedJoinForm(box) {
+    var back = formShell(box, "Colle le code d'invitation reçu de l'autre téléphone :");
+    var ta = el("textarea"); ta.id = "sharedInviteIn"; ta.rows = 3; ta.placeholder = "SA1:…"; ta.setAttribute("autocomplete", "off"); ta.setAttribute("autocapitalize", "off"); ta.spellcheck = false;
+    box.appendChild(ta);
+    var err = el("p", "err"); err.hidden = true; box.appendChild(err);
+    var acts = el("div", "actions");
+    var go = el("button", "btn", "Rejoindre"); go.type = "button";
+    acts.appendChild(go); box.appendChild(acts); box.appendChild(back);
+    go.onclick = async function () {
+      go.disabled = true; go.textContent = "Connexion…"; err.hidden = true;
+      try { await sharedJoin(ta.value); toast("Agenda commun relié"); renderShared(); }
+      catch (e) { err.hidden = false; err.textContent = e.message; go.disabled = false; go.textContent = "Rejoindre"; }
+    };
+  }
+  function sharedInvite(box) {
+    var back = formShell(box, "Envoie ce code à l'autre téléphone (par texto). Dans Super Agenda, elle ou il touche « Agenda commun », puis « J'ai reçu un code ».");
+    var code = inviteCode();
+    var ta = el("textarea"); ta.id = "sharedInviteOut"; ta.rows = 4; ta.readOnly = true; ta.value = code;
+    box.appendChild(ta);
+    box.appendChild(el("p", "shared-note", "Ce code donne accès à votre agenda commun seulement. Ne l'envoie qu'à la bonne personne."));
+    var acts = el("div", "actions");
+    var cp = el("button", "btn", "Copier le code"); cp.type = "button";
+    cp.onclick = function () {
+      var sel = function () { ta.focus(); ta.select(); toast("Sélectionne le texte et copie-le"); };
+      try { navigator.clipboard.writeText(code).then(function () { toast("Code copié"); }, sel); } catch (e) { sel(); }
+    };
+    acts.appendChild(cp);
+    if (navigator.share) {
+      var sh = el("button", "btn ghost", "Envoyer…"); sh.type = "button";
+      sh.onclick = function () { navigator.share({ text: "Code pour notre agenda commun dans Super Agenda (https://thiiboo.github.io) :\n" + code }).catch(function () {}); };
+      acts.appendChild(sh);
+    }
+    box.appendChild(acts);
+    back.textContent = "Terminé"; box.appendChild(back);
+  }
+
+  sharedLoad();
+  renderShared();
+  if (shared.cfg) sharedSync();
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) sharedSync(); });
+  window.addEventListener("online", function () { sharedSync(); });
+  setInterval(function () { if (!document.hidden) sharedSync(); }, 20000);
 
   /* ---------- wiring ---------- */
   document.getElementById("fab").onclick = function () { if (state.view === "todo") openTaskSheet(null); else openSheet(null, state.selected); };
