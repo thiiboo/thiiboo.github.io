@@ -240,6 +240,13 @@ button { cursor: pointer; }
 .help { font-size: 14px; color: var(--muted); }
 .help summary { cursor: pointer; font-weight: 700; color: var(--ink); }
 .help p { margin: 8px 0; }
+.snaps { display: flex; flex-direction: column; gap: 6px; }
+.snap { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.snap span { min-width: 0; color: var(--ink); }
+.snap button { flex: none; border: 1px solid var(--line); background: transparent; border-radius: 10px; padding: 6px 10px; font-weight: 700; font-size: 14px; }
+.snap button.sure { background: var(--danger); border-color: var(--danger); color: #fff; }
+.remind { background: var(--p-haute-bg); border: 2px solid var(--p-haute); border-radius: var(--r); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.remind p { margin: 0; font-weight: 700; }
 #backup .actions { margin-top: 4px; }
 .help ol { padding-left: 20px; margin: 8px 0 0; display: flex; flex-direction: column; gap: 4px; }
 </style>
@@ -270,6 +277,14 @@ button { cursor: pointer; }
     <ul id="soonList"></ul>
   </section>
 
+  <section class="remind" id="remind" hidden>
+    <p id="remindText"></p>
+    <div class="actions">
+      <button class="btn" id="remindSave" type="button">Sauvegarder maintenant</button>
+      <button class="btn ghost" id="remindLater" type="button">Plus tard</button>
+    </div>
+  </section>
+
   <main id="main"></main>
 
   <details class="help">
@@ -283,7 +298,9 @@ button { cursor: pointer; }
   </details>
   <details class="help" id="backup">
     <summary>Sauvegarder ou récupérer mes données</summary>
-    <p>Tes activités et tâches sont gardées seulement sur ce téléphone. Une sauvegarde crée un petit fichier que tu peux garder dans Fichiers ou t'envoyer par courriel.</p>
+    <p><b>Automatique :</b> chaque changement est enregistré tout de suite sur ce téléphone. En plus, l'app garde une copie de chaque jour, pour les 7 derniers jours, si tu effaces quelque chose par erreur.</p>
+    <div class="snaps" id="snaps"></div>
+    <p><b>Hors du téléphone :</b> si le téléphone est perdu ou effacé, seule une sauvegarde gardée ailleurs te protège. L'app te le rappelle chaque semaine. Garde le fichier dans Fichiers (iCloud Drive) ou envoie-le-toi par courriel.</p>
     <div class="actions">
       <button class="btn" id="exportBtn" type="button">Sauvegarder mes données</button>
       <label class="btn ghost" for="importFile" style="text-align:center">Récupérer une sauvegarde</label>
@@ -415,12 +432,29 @@ button { cursor: pointer; }
   function loadLocal() {
     try { var raw = localStorage.getItem("sa-events"); state.events = raw ? JSON.parse(raw) : []; } catch (e) { state.events = []; }
   }
-  function saveLocal() { try { localStorage.setItem("sa-events", JSON.stringify(state.events)); } catch (e) {} }
+  function saveLocal() {
+    try {
+      snapshotIfNeeded(localStorage.getItem("sa-events"));
+      localStorage.setItem("sa-events", JSON.stringify(state.events));
+    } catch (e) {}
+  }
+  /* Automatic copies: the state as it was at the start of each day, last 7 days. */
+  function getSnaps() { try { return JSON.parse(localStorage.getItem("sa-snaps") || "[]"); } catch (e) { return []; } }
+  function snapshotIfNeeded(raw) {
+    if (!raw || raw === "[]") return;
+    var snaps = getSnaps(), t = todayIso();
+    if (snaps.length && snaps[snaps.length - 1].day === t) return;
+    snaps.push({ day: t, at: new Date().toISOString(), data: raw });
+    snaps = snaps.slice(-7);
+    try { localStorage.setItem("sa-snaps", JSON.stringify(snaps)); }
+    catch (e) { try { localStorage.setItem("sa-snaps", JSON.stringify(snaps.slice(-3))); } catch (e2) {} }
+  }
   function newId() { return "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
   function setStatus(t) { document.getElementById("status").textContent = t; }
 
   loadLocal(); state.loaded = true;
+  try { snapshotIfNeeded(localStorage.getItem("sa-events")); } catch (e) {}
   setStatus("Tes données restent sur ce téléphone. Fais une sauvegarde de temps en temps.");
 
 
@@ -429,6 +463,7 @@ button { cursor: pointer; }
   function catColor(id) { return "var(--c-" + (CAT[id] ? id : "autre") + ")"; }
 
   function render() {
+    if (typeof renderRemind === "function") try { renderRemind(); } catch (e) {}
     renderHeader(); renderWeek(); renderTabs(); renderFilters(); renderSoon();
     var main = document.getElementById("main"); main.textContent = "";
     var todo = state.view === "todo";
@@ -942,20 +977,60 @@ button { cursor: pointer; }
   }
 
   /* ---------- backup ---------- */
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function markExported() { lsSet("sa-lastExport", todayIso()); renderRemind(); }
+  if (!lsGet("sa-firstUse")) lsSet("sa-firstUse", todayIso());
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) {}
+
+  function renderRemind() {
+    var box = document.getElementById("remind");
+    var last = lsGet("sa-lastExport"), snooze = lsGet("sa-snooze"), t = todayIso();
+    var since = diffDays(last || lsGet("sa-firstUse") || t, t);
+    var mine = state.events.filter(function (e) { return !e.example; }).length;
+    var show = mine >= 3 && since >= 7 && !(snooze && snooze > t);
+    box.hidden = !show;
+    if (show) document.getElementById("remindText").textContent = last
+      ? "Ta dernière sauvegarde date de " + since + " jours. On en fait une ?"
+      : "Fais ta première sauvegarde pour ne jamais perdre ton agenda.";
+  }
+  document.getElementById("remindSave").onclick = function () { document.getElementById("exportBtn").click(); };
+  document.getElementById("remindLater").onclick = function () { lsSet("sa-snooze", addDays(todayIso(), 2)); renderRemind(); };
+
+  function renderSnaps() {
+    var box = document.getElementById("snaps"); box.textContent = "";
+    var snaps = getSnaps().slice().reverse();
+    if (!snaps.length) { box.appendChild(el("p", "empty-day", "La première copie automatique sera faite demain.")); return; }
+    snaps.forEach(function (sn) {
+      var n = 0; try { n = JSON.parse(sn.data).length; } catch (e) {}
+      var row = el("div", "snap");
+      var d = diffDays(sn.day, todayIso());
+      row.appendChild(el("span", null, (d === 0 ? "Ce matin" : d === 1 ? "Hier" : longDate(sn.day)) + " · " + n + " éléments"));
+      var b = el("button", null, "Revenir"); b.type = "button"; var armed = false;
+      b.onclick = function () {
+        if (!armed) { armed = true; b.classList.add("sure"); b.textContent = "Touche encore pour confirmer"; return; }
+        try { state.events = JSON.parse(sn.data); saveLocal(); render(); renderSnaps(); toast("Agenda remis comme " + (d === 0 ? "ce matin" : d === 1 ? "hier" : "le " + longDate(sn.day))); }
+        catch (e) { toast("Cette copie est illisible"); }
+      };
+      row.appendChild(b); box.appendChild(row);
+    });
+  }
+  document.querySelector("#backup summary").addEventListener("click", function () { renderSnaps(); });
+
   document.getElementById("exportBtn").onclick = function () {
     var data = JSON.stringify({ app: "super-agenda", version: 1, savedAt: new Date().toISOString(), events: state.events }, null, 1);
     var name = "super-agenda-" + todayIso() + ".json";
     var file = null;
     try { file = new File([data], name, { type: "application/json" }); } catch (e) {}
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      navigator.share({ files: [file], title: "Sauvegarde Super Agenda" }).catch(function () {});
+      navigator.share({ files: [file], title: "Sauvegarde Super Agenda" }).then(function () { markExported(); toast("Sauvegarde faite"); }).catch(function () {});
       return;
     }
     var a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
     a.download = name; document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-    toast("Sauvegarde créée");
+    markExported(); toast("Sauvegarde créée");
   };
   document.getElementById("importFile").onchange = function (e) {
     var f = e.target.files && e.target.files[0]; if (!f) return;
