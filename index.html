@@ -9,14 +9,14 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Agenda">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f3f5f4" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#101719" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef5ff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15132b" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
 <style>
 /* Layout: one phone column — week strip on top, day timeline below, big + button bottom-right, add sheet slides up. */
 :root {
@@ -249,6 +249,153 @@ button { cursor: pointer; }
 .remind p { margin: 0; font-weight: 700; }
 #backup .actions { margin-top: 4px; }
 .help ol { padding-left: 20px; margin: 8px 0 0; display: flex; flex-direction: column; gap: 4px; }
+
+/* ===== Style coloré et fun : fond ciel, couleurs vives, formes rondes « autocollant » ===== */
+:root {
+  --bg: #eef5ff; --surface: #ffffff; --ink: #1d1b3a; --muted: #6b6a8a; --line: #dfe6f5;
+  --accent: #ff4f8b; --accent-ink: #ffffff; --sun: #ffc83d; --danger: #f2383f; --today: #ff4f8b;
+  --shadow: rgba(29,27,58,.14);
+  --c-ecole: #3d7cff; --c-devoir: #ff9b1a; --c-examen: #f2383f; --c-etude: #9b5cff;
+  --c-travail: #2bb3a3; --c-famille: #ff4f8b; --c-loisir: #2fc76a; --c-sport: #1ab6e8; --c-autre: #8d8ca6;
+  --p-urgent: #f2383f; --p-urgent-bg: #ffe5e6; --p-haute: #ff9b1a; --p-haute-bg: #fff0dc;
+  --p-normale: #3d7cff; --p-normale-bg: #e3edff; --p-basse: #2fc76a; --p-basse-bg: #e0f8ea;
+  --bar: rgba(255,255,255,.92);
+  --font-display: "Fredoka", "Arial Rounded MT Bold", -apple-system, system-ui, sans-serif;
+  --font-body: "Nunito", -apple-system, system-ui, sans-serif;
+  --r: 20px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15132b; --surface: #222043; --ink: #f4f3ff; --muted: #a9a7cc; --line: #34325c;
+    --accent: #ff6b9e; --accent-ink: #1d1b3a; --sun: #ffd25c; --danger: #ff5c62; --today: #ff6b9e;
+    --shadow: rgba(0,0,0,.4);
+    --c-ecole: #6b9bff; --c-devoir: #ffae45; --c-examen: #ff5c62; --c-etude: #b285ff;
+    --c-travail: #3fd0bf; --c-famille: #ff6b9e; --c-loisir: #4ddb85; --c-sport: #45cdf5; --c-autre: #a6a5c0;
+    --p-urgent: #ff5c62; --p-urgent-bg: #3d1a2a; --p-haute: #ffae45; --p-haute-bg: #3b2a1c;
+    --p-normale: #6b9bff; --p-normale-bg: #1e2a52; --p-basse: #4ddb85; --p-basse-bg: #173a2c;
+    --bar: rgba(34,32,67,.94);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15132b; --surface: #222043; --ink: #f4f3ff; --muted: #a9a7cc; --line: #34325c;
+  --accent: #ff6b9e; --accent-ink: #1d1b3a; --sun: #ffd25c; --danger: #ff5c62; --today: #ff6b9e;
+  --shadow: rgba(0,0,0,.4);
+  --c-ecole: #6b9bff; --c-devoir: #ffae45; --c-examen: #ff5c62; --c-etude: #b285ff;
+  --c-travail: #3fd0bf; --c-famille: #ff6b9e; --c-loisir: #4ddb85; --c-sport: #45cdf5; --c-autre: #a6a5c0;
+  --p-urgent: #ff5c62; --p-urgent-bg: #3d1a2a; --p-haute: #ffae45; --p-haute-bg: #3b2a1c;
+  --p-normale: #6b9bff; --p-normale-bg: #1e2a52; --p-basse: #4ddb85; --p-basse-bg: #173a2c;
+  --bar: rgba(34,32,67,.94);
+  color-scheme: dark;
+}
+body { font-size: 17px; font-weight: 600; }
+.app { padding: 10px 16px calc(120px + env(safe-area-inset-bottom, 0px)); gap: 16px; }
+.top { align-items: center; }
+.top h1 { font-family: var(--font-display); font-weight: 700; font-size: 36px; letter-spacing: -0.01em; line-height: 1.05; }
+.top h1::after { content: ""; display: block; width: 46px; height: 8px; margin-top: 6px; border-radius: 8px; background: var(--sun); }
+.top .sub { font-size: 15px; font-weight: 700; color: var(--muted); }
+.top-actions { display: flex; align-items: center; gap: 8px; }
+.pill-btn { border: 0; background: var(--surface); color: var(--ink); box-shadow: 0 3px 0 var(--shadow); font-weight: 800; font-size: 14px; }
+.add-btn {
+  width: 54px; height: 54px; border-radius: 18px; border: 0; background: var(--accent); color: #fff;
+  font-family: var(--font-display); font-size: 36px; line-height: 1; display: grid; place-items: center; padding-bottom: 4px;
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--accent) 60%, #000); transform: rotate(-4deg);
+  transition: transform .15s ease;
+}
+.add-btn:active { transform: rotate(-4deg) translateY(3px); box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+
+.week { background: var(--surface); border-radius: 22px; padding: 8px 4px; box-shadow: 0 4px 0 var(--shadow); }
+.day { border-radius: 16px; transition: transform .15s ease; }
+.day .dn { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; }
+.day .dd { font-family: var(--font-display); font-weight: 600; font-size: 20px; }
+.day.today .dd { color: var(--accent); }
+.day.sel { background: var(--accent); transform: rotate(-3deg) scale(1.04); box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+.day.sel .dn, .day.sel .dd { color: #fff; }
+.day.sel .dots i { box-shadow: 0 0 0 1.5px #fff; }
+
+.chip { border: 0; background: var(--surface); box-shadow: 0 3px 0 var(--shadow); font-weight: 800; font-size: 15px; padding: 8px 14px; }
+.chip i { width: 12px; height: 12px; }
+.chip.all[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.chip[aria-pressed="true"] { box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 60%, #000); }
+
+.soon { border: 0; border-radius: var(--r); background: var(--sun); color: #1d1b3a; box-shadow: 0 4px 0 color-mix(in srgb, var(--sun) 55%, #000); }
+.soon h2 { color: #1d1b3a; font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: 0.02em; }
+.soon li { background: rgba(255,255,255,.7); border-radius: 12px; padding: 6px 8px; }
+.soon .when { color: #3a3858; font-weight: 800; }
+.soon .when.hot { color: #d01f28; }
+
+.list { gap: 10px; }
+.ev {
+  border: 0; border-radius: var(--r); padding: 14px 14px 14px 26px; grid-template-columns: 54px 1fr auto;
+  background: color-mix(in srgb, var(--c) 16%, var(--surface));
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 35%, var(--shadow));
+}
+.ev::before { inset: 12px auto 12px 10px; width: 6px; border-radius: 6px; }
+.ev .time { font-family: var(--font-display); font-weight: 600; font-size: 17px; text-align: left; }
+.ev .title { font-family: var(--font-display); font-weight: 600; font-size: 19px; }
+.ev .meta { font-weight: 700; }
+.ev .meta b { background: var(--c); color: #fff; border-radius: 999px; padding: 1px 9px; font-size: 12px; }
+.ev.done { opacity: .65; }
+.check { width: 36px; height: 36px; border-width: 3px; background: var(--surface); font-size: 18px; transition: transform .2s cubic-bezier(.3,1.6,.5,1); }
+.check[aria-pressed="true"] { transform: scale(1.12) rotate(-8deg); }
+.now-line { font-weight: 800; color: var(--accent); }
+.now-line::after { background: var(--accent); height: 3px; }
+
+.wday h3 { font-family: var(--font-display); font-weight: 700; font-size: 22px; }
+.wday.is-today h3 { color: var(--accent); }
+.wday.is-today h3::before { content: "★"; color: var(--sun); }
+.empty-day { font-weight: 700; }
+
+.legend { gap: 10px; }
+.prio-chip { border: 0; border-radius: 16px; padding: 12px; box-shadow: 0 4px 0 color-mix(in srgb, var(--p) 40%, var(--shadow)); font-weight: 800; }
+.prio-chip .n { font-family: var(--font-display); font-size: 20px; }
+.task { border: 0; border-radius: var(--r); padding: 14px; box-shadow: 0 4px 0 color-mix(in srgb, var(--p) 40%, var(--shadow)); }
+.task .title { font-family: var(--font-display); font-weight: 600; font-size: 19px; }
+.task .badge { border-radius: 999px; padding: 2px 9px; }
+.task.done { box-shadow: 0 4px 0 var(--shadow); }
+.task .check { width: 36px; height: 36px; border: 3px solid var(--p); }
+
+.empty { border: 0; border-radius: var(--r); box-shadow: 0 4px 0 var(--shadow); }
+.empty h2 { font-family: var(--font-display); font-weight: 700; }
+.btn { border-radius: 16px; font-weight: 800; font-size: 17px; padding: 14px 16px; box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 55%, #000); }
+.btn:active { transform: translateY(2px); }
+.btn.ghost { background: var(--surface); border: 0; color: var(--ink); box-shadow: 0 4px 0 var(--shadow); }
+.btn.danger { background: var(--surface); border: 0; color: var(--danger); box-shadow: 0 4px 0 var(--shadow); }
+.btn.danger.sure { background: var(--danger); color: #fff; }
+.help { background: var(--surface); border-radius: var(--r); padding: 14px; box-shadow: 0 4px 0 var(--shadow); font-weight: 600; }
+.help summary { font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.snap { border: 0; background: var(--bg); }
+.snap button { border: 0; background: var(--accent); color: #fff; border-radius: 999px; }
+.remind { border: 0; border-radius: var(--r); background: var(--p-haute-bg); box-shadow: 0 4px 0 color-mix(in srgb, var(--p-haute) 45%, var(--shadow)); }
+
+.tabbar {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 6;
+  width: min(420px, calc(100% - 32px)); display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 6px;
+  background: var(--bar); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  border-radius: 26px; box-shadow: 0 6px 0 var(--shadow), 0 10px 30px var(--shadow);
+}
+.tabbar button { position: relative; border: 0; background: transparent; color: var(--muted); border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 12px; font-weight: 800; padding: 6px 0; transition: background .2s ease, color .2s ease; }
+.tabbar svg { width: 24px; height: 24px; }
+.tabbar button[aria-selected="true"] { background: var(--accent); color: #fff; }
+.tabbar .badge-count { position: absolute; top: 2px; left: calc(50% + 8px); margin: 0; font-size: 11px; min-width: 20px; line-height: 20px; background: var(--sun); color: #1d1b3a; box-shadow: 0 0 0 2px var(--bar); }
+.toast { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); border-radius: 16px; background: var(--ink); font-weight: 800; }
+
+.scrim { background: rgba(21,19,43,.45); }
+.sheet { border-radius: 28px 28px 0 0; }
+.sheet-h h2 { font-family: var(--font-display); font-weight: 700; font-size: 24px; }
+.x { background: var(--surface); box-shadow: 0 3px 0 var(--shadow); }
+.field > span, .field > label { font-weight: 800; }
+.field input, .field select, .field textarea { border: 0; border-radius: 16px; box-shadow: 0 3px 0 var(--shadow); font-weight: 600; }
+.cat, .prio { border: 0; border-radius: 16px; box-shadow: 0 3px 0 var(--shadow); font-weight: 800; }
+.cat { background: color-mix(in srgb, var(--c) 14%, var(--surface)); }
+.cat[aria-pressed="true"] { background: var(--c); transform: rotate(-2deg); box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 55%, #000); }
+.prio { background: var(--pbg); }
+.prio[aria-pressed="true"] { background: var(--p); transform: rotate(-2deg); }
+
+/* Petite fête quand on coche une tâche */
+.confetti { position: fixed; z-index: 30; width: 9px; height: 13px; border-radius: 3px; pointer-events: none; animation: conf .9s ease-out forwards; }
+@keyframes conf { to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .confetti { display: none; } .day.sel, .add-btn, .cat[aria-pressed="true"], .prio[aria-pressed="true"] { transform: none; } }
 </style>
 
 </head>
@@ -259,16 +406,19 @@ button { cursor: pointer; }
       <h1 id="title">Aujourd'hui</h1>
       <div class="sub" id="subtitle"></div>
     </div>
-    <button class="pill-btn" id="goToday" type="button">Aujourd'hui</button>
+    <div class="top-actions">
+      <button class="pill-btn" id="goToday" type="button">Aujourd'hui</button>
+      <button class="add-btn" id="fab" type="button" aria-label="Ajouter">+</button>
+    </div>
   </header>
 
   <nav class="week" id="week" aria-label="Choisir un jour"></nav>
 
-  <div class="tabs" role="tablist">
-    <button id="tabDay" role="tab" aria-selected="true" type="button">Jour</button>
-    <button id="tabWeek" role="tab" aria-selected="false" type="button">Semaine</button>
-    <button id="tabTodo" role="tab" aria-selected="false" type="button">À faire</button>
-  </div>
+  <nav class="tabbar" role="tablist" aria-label="Vues">
+    <button id="tabDay" role="tab" aria-selected="true" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="7" y="12.5" width="4" height="4" rx="1" fill="currentColor"/></svg><span>Jour</span></button>
+    <button id="tabWeek" role="tab" aria-selected="false" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13h10M7 16.5h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Semaine</span></button>
+    <button id="tabTodo" role="tab" aria-selected="false" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="7" r="1.6" fill="currentColor"/><circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="5.5" cy="17" r="1.6" fill="currentColor"/><path d="M10 7h10M10 12h10M10 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="tl">À faire</span></button>
+  </nav>
 
   <div class="filters" id="filters" aria-label="Filtrer par type"></div>
 
@@ -310,7 +460,6 @@ button { cursor: pointer; }
   <div class="status" id="status"></div>
 </div>
 
-<button class="fab" id="fab" type="button" aria-label="Ajouter une activité">+</button>
 <div id="sheetRoot"></div>
 <div class="toast" id="toast" hidden></div>
 
@@ -531,7 +680,7 @@ button { cursor: pointer; }
     document.getElementById("tabWeek").setAttribute("aria-selected", String(state.view === "week"));
     var tt = document.getElementById("tabTodo"), n = openTaskCount();
     tt.setAttribute("aria-selected", String(state.view === "todo"));
-    tt.textContent = "À faire";
+    var old = tt.querySelector(".badge-count"); if (old) old.remove();
     if (n) tt.appendChild(el("span", "badge-count", String(n)));
   }
   function setView(v) { state.view = v; try { localStorage.setItem("sa-view", v); } catch (e) {} render(); }
@@ -595,7 +744,7 @@ button { cursor: pointer; }
     var chk = el("button", "check", done ? "✓" : ""); chk.type = "button";
     chk.setAttribute("aria-pressed", String(done));
     chk.setAttribute("aria-label", done ? "Marquer comme pas fait" : "Marquer comme fait");
-    chk.onclick = function () { toggleDone(e, day); };
+    chk.onclick = function () { if (!done) confetti(chk); toggleDone(e, day); };
     b.appendChild(chk);
     return b;
   }
@@ -675,7 +824,7 @@ button { cursor: pointer; }
     var chk = el("button", "check", done ? "✓" : ""); chk.type = "button";
     chk.setAttribute("aria-pressed", String(done));
     chk.setAttribute("aria-label", done ? "Marquer comme pas fait" : "Marquer comme fait");
-    chk.onclick = function () { toggleTask(t); };
+    chk.onclick = function () { if (!done) confetti(chk); toggleTask(t); };
     b.appendChild(body); b.appendChild(chk);
     return b;
   }
@@ -833,6 +982,22 @@ button { cursor: pointer; }
 
   /* ---------- actions ---------- */
   var toastTimer;
+  function confetti(from) {
+    try { if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch (e) {}
+    var r = from ? from.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 };
+    var cols = ["var(--accent)", "var(--sun)", "var(--c-ecole)", "var(--c-loisir)", "var(--c-etude)", "var(--c-sport)"];
+    for (var i = 0; i < 18; i++) {
+      var c = el("i", "confetti");
+      c.style.left = (r.left + r.width / 2) + "px"; c.style.top = (r.top + r.height / 2) + "px";
+      c.style.background = cols[i % cols.length];
+      var ang = Math.random() * Math.PI * 2, dist = 50 + Math.random() * 70;
+      c.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+      c.style.setProperty("--dy", (Math.sin(ang) * dist - 30) + "px");
+      c.style.setProperty("--rot", (Math.random() * 540 - 270) + "deg");
+      document.body.appendChild(c);
+      setTimeout(function (n) { return function () { n.remove(); }; }(c), 950);
+    }
+  }
   function toast(t) {
     var n = document.getElementById("toast"); n.textContent = t; n.hidden = false;
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { n.hidden = true; }, 1800);
