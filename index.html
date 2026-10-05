@@ -616,6 +616,10 @@ body { font-size: 16px; font-weight: 500; }
   function setStatus(t) { document.getElementById("status").textContent = t; }
 
   loadLocal(); state.loaded = true;
+  if (state.events.some(function (e) { return e.example; })) {
+    state.events = state.events.filter(function (e) { return !e.example; });
+    saveLocal();
+  }
   try { snapshotIfNeeded(localStorage.getItem("sa-events")); } catch (e) {}
   setStatus("Tes données restent sur ce téléphone. Fais une sauvegarde de temps en temps.");
 
@@ -855,8 +859,7 @@ body { font-size: 16px; font-weight: 500; }
     em.appendChild(el("p", null, "Ajoute tes cours, devoirs, examens, heures de travail, sorties en famille et loisirs. Chaque type a sa couleur, pour tout voir d'un coup d'œil."));
     var acts = el("div", "actions"); acts.style.width = "100%";
     var add = el("button", "btn", "Ajouter ma première activité"); add.type = "button"; add.onclick = function () { openSheet(null, state.selected); };
-    var demo = el("button", "btn ghost", "Voir une semaine d'exemple"); demo.type = "button"; demo.onclick = addExamples;
-    acts.appendChild(add); acts.appendChild(demo); em.appendChild(acts);
+    acts.appendChild(add); em.appendChild(acts);
     return em;
   }
 
@@ -924,8 +927,7 @@ body { font-size: 16px; font-weight: 500; }
       em.appendChild(el("p", null, "Ajoute une tâche, choisis à quelle fréquence la refaire (chaque jour, chaque semaine, chaque mois…) et sa couleur d'importance : rouge pour urgent, orange pour important, bleu pour normal, vert quand ça peut attendre."));
       var acts = el("div", "actions"); acts.style.width = "100%";
       var add = el("button", "btn", "Ajouter une tâche"); add.type = "button"; add.onclick = function () { openTaskSheet(null); };
-      var demo = el("button", "btn ghost", "Voir des exemples"); demo.type = "button"; demo.onclick = addTaskExamples;
-      acts.appendChild(add); acts.appendChild(demo); em.appendChild(acts);
+      acts.appendChild(add); em.appendChild(acts);
       wrap.appendChild(em); return wrap;
     }
     var shown = active.filter(function (t) { return !state.prio || (t.prio || "normale") === state.prio; });
@@ -952,24 +954,6 @@ body { font-size: 16px; font-weight: 500; }
     c.doneKeys = list.slice(-40);
     upsert(c);
     if (i < 0) toast("C'est fait");
-  }
-  function addTaskExamples() {
-    var t = todayIso();
-    var ex = [
-      { title: "Remettre le travail d'histoire (exemple)", prio: "urgent", freq: "once", due: addDays(t, 1), dueTime: "08:00" },
-      { title: "Faire mon lit (exemple)", prio: "basse", freq: "day" },
-      { title: "Boire un verre d'eau (exemple)", prio: "normale", freq: "hour" },
-      { title: "Ménage de la chambre (exemple)", prio: "haute", freq: "week" },
-      { title: "Payer mon forfait cellulaire (exemple)", prio: "haute", freq: "month" },
-      { title: "Acheter un cadeau pour maman (exemple)", prio: "normale", freq: "once", due: addDays(t, 9) }
-    ];
-    var chain = Promise.resolve();
-    ex.forEach(function (e) {
-      e.id = newId(); e.kind = "task"; e.example = true; state.events.push(e);
-      chain = chain.then(function () { return store.save(e); });
-    });
-    render(); chain.catch(function () {});
-    toast("Exemples ajoutés");
   }
   function openTaskSheet(t) {
     var editing = !!t;
@@ -1087,28 +1071,6 @@ body { font-size: 16px; font-weight: 500; }
     ev.doneDates = list.filter(function (d) { return d >= addDays(todayIso(), -60); });
     upsert(ev);
     if (i < 0) toast("C'est fait");
-  }
-
-  function addExamples() {
-    var ws = weekStart(todayIso());
-    var ex = [
-      { title: "Cours (exemple)", cat: "ecole", date: ws, start: "08:15", end: "15:30", repeat: "weekdays" },
-      { title: "Devoir de maths p. 42 (exemple)", cat: "devoir", date: addDays(ws, 1), start: "", end: "", repeat: "none" },
-      { title: "Examen de français (exemple)", cat: "examen", date: addDays(ws, 3), start: "09:00", end: "11:00", repeat: "none" },
-      { title: "Réviser le français (exemple)", cat: "etude", date: addDays(ws, 2), start: "19:00", end: "20:00", repeat: "none" },
-      { title: "Travail au resto (exemple)", cat: "travail", date: addDays(ws, 4), start: "17:00", end: "21:00", repeat: "weekly" },
-      { title: "Soccer (exemple)", cat: "sport", date: addDays(ws, 1), start: "18:00", end: "19:30", repeat: "weekly" },
-      { title: "Souper chez grand-maman (exemple)", cat: "famille", date: addDays(ws, 6), start: "17:30", end: "", repeat: "none" },
-      { title: "Cinéma avec les amis (exemple)", cat: "loisir", date: addDays(ws, 5), start: "19:30", end: "", repeat: "none" }
-    ];
-    var chain = Promise.resolve();
-    ex.forEach(function (e) {
-      e.id = newId(); e.example = true; state.events.push(e);
-      chain = chain.then(function () { return store.save(e); });
-    });
-    render();
-    chain.catch(function () {});
-    toast("Exemples ajoutés");
   }
 
   /* ---------- add / edit sheet ---------- */
