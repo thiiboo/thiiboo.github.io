@@ -463,6 +463,11 @@ body { font-size: 16px; font-weight: 500; }
     </div>
   </section>
 
+  <section class="remind shared-alert" id="storeAlert" hidden>
+    <p id="storeAlertText"></p>
+    <ol class="steps" id="storeAlertSteps"></ol>
+  </section>
+
   <section class="remind shared-alert" id="sharedAlert" hidden>
     <p id="sharedAlertText"></p>
     <div class="actions"><button class="btn" id="sharedAlertGo" type="button">Régler maintenant</button></div>
@@ -478,7 +483,7 @@ body { font-size: 16px; font-weight: 500; }
     <summary>Mettre l'agenda sur l'écran d'accueil de l'iPhone</summary>
     <ol>
       <li>Ouvre ce lien dans Safari.</li>
-      <li>Touche le bouton Partager (le carré avec la flèche).</li>
+      <li>Touche le bouton Partager (le carré avec la flèche), ou « ··· » puis Partager.</li>
       <li>Choisis « Sur l'écran d'accueil », puis « Ajouter ».</li>
       <li>Ouvre ensuite l'agenda avec sa nouvelle icône. Il marche même sans Internet.</li>
     </ol>
@@ -1206,6 +1211,33 @@ body { font-size: 16px; font-weight: 500; }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function markExported() { lsSet("sa-lastExport", todayIso()); renderRemind(); }
   if (!lsGet("sa-firstUse")) lsSet("sa-firstUse", todayIso());
+
+  // Warns when this phone will not keep the agenda: private browsing, blocked cookies,
+  // or the page opened inside another app instead of from its Home Screen icon.
+  function storageWorks() {
+    try { localStorage.setItem("sa-test", "1"); var ok = localStorage.getItem("sa-test") === "1"; localStorage.removeItem("sa-test"); return ok; } catch (e) { return false; }
+  }
+  function isIos() { return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+  function isInstalled() { return navigator.standalone === true || !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches); }
+  function renderStoreAlert() {
+    var box = document.getElementById("storeAlert"), steps = [], text = "";
+    if (!storageWorks()) {
+      text = "Ce téléphone empêche l'agenda d'enregistrer tes activités : elles disparaîtront quand tu le fermes.";
+      steps = ["Si la barre de Safari est foncée, tu es en navigation privée : sors de ce mode.",
+        "Dans Réglages, Apps, Safari, désactive « Bloquer tous les cookies ».",
+        "Ensuite, installe l'agenda sur l'écran d'accueil et ouvre-le toujours avec son icône."];
+    } else if (isIos() && !isInstalled()) {
+      text = "Attention : l'agenda est ouvert comme une page web. Tes activités et ton agenda commun peuvent disparaître quand tu le fermes.";
+      steps = ["Ouvre thiiboo.github.io dans Safari (la boussole bleue), pas dans Claude ni dans Messages.",
+        "Touche Partager (ou « ··· », puis Partager), puis « Sur l'écran d'accueil », puis « Ajouter ».",
+        "Ouvre ensuite toujours l'agenda avec son icône sur l'écran d'accueil."];
+    }
+    box.hidden = !text;
+    document.getElementById("storeAlertText").textContent = text;
+    var ol = document.getElementById("storeAlertSteps"); ol.textContent = "";
+    steps.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+  }
+  renderStoreAlert();
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) {}
 
   function renderRemind() {
