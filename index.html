@@ -1423,10 +1423,34 @@ body { font-size: 16px; font-weight: 500; }
 
   /* jumelage */
   function inviteCode() { var c = shared.cfg; return "SA1:" + b64url(utf8(JSON.stringify({ o: c.o, r: c.r, t: c.t, k: c.k }))); }
+  function decodeInvite(body) {
+    try { var c = JSON.parse(fromUtf8(unb64url(body))); return c && c.o && c.r && c.t && c.k ? c : null; } catch (e) { return null; }
+  }
+  // Tolerates what texting apps do to a long code: line breaks, invisible characters,
+  // "smart" dashes, a missing "SA1:" or words glued to the end.
   function parseInvite(text) {
-    var m = String(text || "").match(/SA1:([A-Za-z0-9_-]+)/);
-    if (!m) return null;
-    try { var c = JSON.parse(fromUtf8(unb64url(m[1]))); return c && c.o && c.r && c.t && c.k ? c : null; } catch (e) { return null; }
+    var t = String(text || "").replace(/[\u200B-\u200D\u2060\uFEFF\u00AD]/g, "")
+      .replace(/[\u2014\u2015]/g, "--").replace(/[\u2010\u2011\u2012\u2013\u2212]/g, "-");
+    var m = t.match(/SA1\s*[:\uFF1A]\s*([A-Za-z0-9_-]+)/i), c = m && decodeInvite(m[1]);
+    if (c) return c;
+    var flat = t.replace(/\s+/g, "");
+    var runs = [];
+    var m2 = flat.match(/SA1[:\uFF1A]([A-Za-z0-9_-]+)/i); if (m2) runs.push(m2[1]);
+    (flat.match(/eyJ[A-Za-z0-9_-]{60,}/g) || []).forEach(function (r) { runs.push(r); });
+    for (var i = 0; i < runs.length; i++) {
+      for (var cut = 0; cut <= 40 && cut < runs[i].length; cut++) {
+        c = decodeInvite(runs[i].slice(0, runs[i].length - cut));
+        if (c) return c;
+      }
+    }
+    return null;
+  }
+  function inviteProblem(text) {
+    var t = String(text || "");
+    if (!t.trim()) return "Colle d'abord le code d'invitation reçu par texto.";
+    if (/SA1\s*[:\uFF1A]/i.test(t)) return "Le code est coupé : il en manque un bout. Dans Messages, appuie longtemps sur la bulle qui contient le code, choisis « Copier », puis efface la case et colle de nouveau.";
+    if (/github_pat_/.test(t)) return "Ça, c'est le code d'accès GitHub. Ici, il faut le code d'invitation : il commence par SA1: et s'affiche dans « Agenda commun » sur l'appareil qui a créé l'agenda commun (bouton « Inviter l'autre téléphone »).";
+    return "Je ne trouve pas de code d'invitation. Il commence par SA1: et s'affiche dans « Agenda commun » sur l'appareil qui a créé l'agenda commun (bouton « Inviter l'autre téléphone »).";
   }
   async function sharedCreate(token, overwrite) {
     token = String(token || "").trim();
@@ -1458,7 +1482,7 @@ body { font-size: 16px; font-weight: 500; }
   }
   async function sharedJoin(text) {
     var c = parseInvite(text);
-    if (!c) throw new Error("Ce code d'invitation n'est pas complet. Copie-le de nouveau en entier.");
+    if (!c) throw new Error(inviteProblem(text));
     await sharedIdle();
     var prev = shared.cfg; shared.cfg = c; sharedSave(); shared.pairing = true;
     try {

@@ -1,5 +1,5 @@
 // Garde l'app disponible sans Internet. Change VERSION à chaque mise à jour.
-var VERSION = "super-agenda-v8";
+var VERSION = "super-agenda-v9";
 var CORE = ["./", "index.html", "manifest.webmanifest", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", function (e) {
