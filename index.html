@@ -362,7 +362,7 @@ body { font-size: 16px; font-weight: 500; }
 
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   padding: 6px max(16px, calc(50% - 264px)) calc(6px + env(safe-area-inset-bottom, 0px));
   background: var(--bar); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
   border-top: 1px solid var(--line);
@@ -385,6 +385,29 @@ body { font-size: 16px; font-weight: 500; }
 .prio { box-shadow: none; }
 .prio[aria-pressed="true"] { background: var(--pbg); border-color: var(--p); color: var(--ink); }
 .prio[aria-pressed="true"] i { background: var(--p); }
+
+/* Vue du mois */
+.month { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 6px 6px; display: flex; flex-direction: column; gap: 6px; }
+.month-nav { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; font-weight: 700; font-size: 16px; }
+.month-nav .nav { width: 36px; height: 36px; }
+.mgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.mhead { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); padding: 2px 0 6px; letter-spacing: 0.04em; }
+.mcell {
+  border: 0; border-top: 1px solid var(--line); background: transparent; min-width: 0; min-height: 76px;
+  display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 3px 2px 4px; text-align: left; border-radius: 0;
+}
+.mcell .mnum { align-self: center; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mcell.out .mnum { color: var(--muted); opacity: .55; }
+.mcell.out .mev { opacity: .5; }
+.mcell.today .mnum { background: var(--accent); color: #fff; }
+.mcell.sel:not(.today) .mnum { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+.mev {
+  display: block; font-size: 10px; line-height: 1.3; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: clip;
+  background: color-mix(in srgb, var(--c) 16%, var(--surface)); color: var(--ink); border-left: 2px solid var(--c); border-radius: 3px; padding: 1px 3px;
+}
+.mev.done { text-decoration: line-through; opacity: .6; }
+.mmore { font-size: 10px; font-weight: 700; color: var(--muted); padding-left: 3px; }
+.tabbar span { white-space: nowrap; }
 </style>
 
 </head>
@@ -406,6 +429,7 @@ body { font-size: 16px; font-weight: 500; }
   <nav class="tabbar" role="tablist" aria-label="Vues">
     <button id="tabDay" role="tab" aria-selected="true" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="7" y="12.5" width="4" height="4" rx="1" fill="currentColor"/></svg><span>Jour</span></button>
     <button id="tabWeek" role="tab" aria-selected="false" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 13h10M7 16.5h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Semaine</span></button>
+    <button id="tabMonth" role="tab" aria-selected="false" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><rect x="6.5" y="12" width="2.4" height="2.4" rx=".6"/><rect x="10.8" y="12" width="2.4" height="2.4" rx=".6"/><rect x="15.1" y="12" width="2.4" height="2.4" rx=".6"/><rect x="6.5" y="16" width="2.4" height="2.4" rx=".6"/><rect x="10.8" y="16" width="2.4" height="2.4" rx=".6"/></g></svg><span>Mois</span></button>
     <button id="tabTodo" role="tab" aria-selected="false" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="7" r="1.6" fill="currentColor"/><circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="5.5" cy="17" r="1.6" fill="currentColor"/><path d="M10 7h10M10 12h10M10 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="tl">À faire</span></button>
   </nav>
 
@@ -551,7 +575,7 @@ body { font-size: 16px; font-weight: 500; }
 
   /* ---------- state ---------- */
   var state = { events: [], selected: todayIso(), view: "day", filter: null, prio: null, loaded: false };
-  try { var v = localStorage.getItem("sa-view"); if (v === "week" || v === "day" || v === "todo") state.view = v; } catch (e) {}
+  try { var v = localStorage.getItem("sa-view"); if (v === "week" || v === "day" || v === "todo" || v === "month") state.view = v; } catch (e) {}
 
   /* ---------- storage: claude db (synced to the account) with a local fallback ---------- */
   var store = {
@@ -605,11 +629,12 @@ body { font-size: 16px; font-weight: 500; }
     renderHeader(); renderWeek(); renderTabs(); renderFilters(); renderSoon();
     var main = document.getElementById("main"); main.textContent = "";
     var todo = state.view === "todo";
-    document.getElementById("week").hidden = todo;
+    document.getElementById("week").hidden = todo || state.view === "month";
     document.getElementById("filters").hidden = todo;
     if (todo) { document.getElementById("soon").hidden = true; main.appendChild(renderTodo()); return; }
     if (!state.events.filter(function (e) { return e.kind !== "task"; }).length) { main.appendChild(renderEmpty()); return; }
     if (state.view === "day") main.appendChild(renderDay(state.selected, true));
+    else if (state.view === "month") { document.getElementById("soon").hidden = true; main.appendChild(renderMonth()); }
     else main.appendChild(renderWeekView());
   }
 
@@ -622,6 +647,13 @@ body { font-size: 16px; font-weight: 500; }
       document.getElementById("title").textContent = "À faire";
       document.getElementById("subtitle").textContent = n === 0 ? "Tout est fait, bravo !" : n === 1 ? "1 tâche à faire" : n + " tâches à faire";
       document.getElementById("goToday").hidden = true;
+      return;
+    }
+    if (state.view === "month") {
+      var mn = MONTHS[parse(s).getMonth()];
+      document.getElementById("title").textContent = mn.charAt(0).toUpperCase() + mn.slice(1);
+      document.getElementById("subtitle").textContent = String(parse(s).getFullYear());
+      document.getElementById("goToday").hidden = s.slice(0, 7) === t.slice(0, 7);
       return;
     }
     if (state.view === "week") {
@@ -667,6 +699,7 @@ body { font-size: 16px; font-weight: 500; }
   function renderTabs() {
     document.getElementById("tabDay").setAttribute("aria-selected", String(state.view === "day"));
     document.getElementById("tabWeek").setAttribute("aria-selected", String(state.view === "week"));
+    document.getElementById("tabMonth").setAttribute("aria-selected", String(state.view === "month"));
     var tt = document.getElementById("tabTodo"), n = openTaskCount();
     tt.setAttribute("aria-selected", String(state.view === "todo"));
     var old = tt.querySelector(".badge-count"); if (old) old.remove();
@@ -752,6 +785,51 @@ body { font-size: 16px; font-weight: 500; }
       if (!placed && e.start && e.start > nowT) { wrap.appendChild(el("div", "now-line", "Maintenant " + nowT)); placed = true; }
       wrap.appendChild(evCard(e, day));
     });
+    return wrap;
+  }
+
+  function addMonths(s, n) {
+    var d = parse(s), day = d.getDate();
+    var m = new Date(d.getFullYear(), d.getMonth() + n, 1);
+    var last = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+    m.setDate(Math.min(day, last)); return iso(m);
+  }
+  function renderMonth() {
+    var wrap = el("div", "month"), t = todayIso(), sel = state.selected;
+    var first = sel.slice(0, 8) + "01", start = weekStart(first);
+    var mIdx = parse(first).getMonth();
+    var nav = el("div", "month-nav");
+    var prev = el("button", "nav", "‹"); prev.type = "button"; prev.setAttribute("aria-label", "Mois précédent");
+    prev.onclick = function () { state.selected = addMonths(state.selected, -1); render(); };
+    var next = el("button", "nav", "›"); next.type = "button"; next.setAttribute("aria-label", "Mois suivant");
+    next.onclick = function () { state.selected = addMonths(state.selected, 1); render(); };
+    var mn = MONTHS[mIdx];
+    nav.appendChild(prev); nav.appendChild(el("span", null, mn.charAt(0).toUpperCase() + mn.slice(1) + " " + parse(first).getFullYear())); nav.appendChild(next);
+    wrap.appendChild(nav);
+    var grid = el("div", "mgrid");
+    ["L", "M", "M", "J", "V", "S", "D"].forEach(function (l) { grid.appendChild(el("div", "mhead", l)); });
+    var weeks = Math.ceil((diffDays(start, first) + new Date(parse(first).getFullYear(), mIdx + 1, 0).getDate()) / 7);
+    for (var i = 0; i < weeks * 7; i++) {
+      (function (day) {
+        var c = el("button", "mcell"); c.type = "button";
+        if (parse(day).getMonth() !== mIdx) c.classList.add("out");
+        if (day === t) c.classList.add("today");
+        if (day === sel) c.classList.add("sel");
+        c.appendChild(el("span", "mnum", String(parse(day).getDate())));
+        var evs = eventsOn(day, true), max = 3;
+        evs.slice(0, evs.length > max ? max - 1 : max).forEach(function (e) {
+          var chip = el("span", "mev", e.title.replace(/ \(exemple\)$/, ""));
+          chip.style.setProperty("--c", catColor(e.cat));
+          if (isDone(e, day)) chip.classList.add("done");
+          c.appendChild(chip);
+        });
+        if (evs.length > max) c.appendChild(el("span", "mmore", "+" + (evs.length - max + 1)));
+        c.setAttribute("aria-label", longDate(day) + (evs.length ? ", " + evs.length + " activité" + (evs.length > 1 ? "s" : "") : ""));
+        c.onclick = function () { state.selected = day; setView("day"); };
+        grid.appendChild(c);
+      })(addDays(start, i));
+    }
+    wrap.appendChild(grid);
     return wrap;
   }
 
@@ -1209,6 +1287,7 @@ body { font-size: 16px; font-weight: 500; }
   document.getElementById("goToday").onclick = function () { state.selected = todayIso(); render(); };
   document.getElementById("tabDay").onclick = function () { setView("day"); };
   document.getElementById("tabWeek").onclick = function () { setView("week"); };
+  document.getElementById("tabMonth").onclick = function () { setView("month"); };
   document.getElementById("tabTodo").onclick = function () { setView("todo"); };
   // Swipe left/right on the list to change day (or week).
   var sx = null, sy = null;
@@ -1218,7 +1297,9 @@ body { font-size: 16px; font-weight: 500; }
     if (sx == null || state.view === "todo") { sx = null; return; }
     var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
     if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      state.selected = addDays(state.selected, (dx < 0 ? 1 : -1) * (state.view === "week" ? 7 : 1)); render();
+      if (state.view === "month") state.selected = addMonths(state.selected, dx < 0 ? 1 : -1);
+      else state.selected = addDays(state.selected, (dx < 0 ? 1 : -1) * (state.view === "week" ? 7 : 1));
+      render();
     }
   }, { passive: true });
   // Refresh the "now" line every minute.
